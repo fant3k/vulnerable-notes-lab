@@ -10,7 +10,7 @@
 2. Создайте новую заметку с body:
 
 ```html
-<script>alert(document.cookie)</script>
+<script>alert(document.domain)</script>
 ```
 
 3. Откройте созданную заметку.

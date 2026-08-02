@@ -1,0 +1,11 @@
+services:
+  vulnerable-notes-lab:
+    build: .
+    ports:
+      - "127.0.0.1:8090:8090"
+    volumes:
+      - vnl-data:/app/data
+    restart: "no"
+
+volumes:
+  vnl-data:

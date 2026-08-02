@@ -5,16 +5,19 @@ from __future__ import annotations
 import json
 import mimetypes
 import os
+from email.parser import BytesParser
+from email.policy import default as email_policy
+from html import escape
 import urllib.error
 import urllib.parse
 import urllib.request
 from http import HTTPStatus
 from http.cookies import SimpleCookie
-from http.server import BaseHTTPRequestHandler, HTTPServer
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import Optional
 
-from .config import DB_PATH, DEMO_SECRET_KEY, SESSION_COOKIE_NAME, UPLOAD_DIR
+from .config import DB_PATH, DEMO_SECRET_KEY, MAX_UPLOAD_BYTES, SESSION_COOKIE_NAME, UPLOAD_DIR
 from .database import (
     authenticate_vulnerable,
     create_note,
@@ -143,6 +146,7 @@ class VulnerableNotesHandler(BaseHTTPRequestHandler):
         cookie[SESSION_COOKIE_NAME] = cookie_value
         cookie[SESSION_COOKIE_NAME]["path"] = "/"
         cookie[SESSION_COOKIE_NAME]["httponly"] = True
+        cookie[SESSION_COOKIE_NAME]["samesite"] = "Lax"
         self._redirect("/notes", headers=[("Set-Cookie", cookie.output(header="").strip())])
 
     def _logout(self) -> None:
@@ -190,17 +194,32 @@ class VulnerableNotesHandler(BaseHTTPRequestHandler):
         self._redirect(f"/note?id={note_id}")
 
     def _upload_file(self, user: dict[str, str]) -> None:
-        fields = self._read_form()
-        filename = os.path.basename(fields.get("filename", "").strip())
-        content = fields.get("content", "")
+        uploaded = self._read_uploaded_file()
+        if uploaded is None:
+            self._send_html(
+                upload_page(user, "Choose a file to upload."),
+                status=HTTPStatus.BAD_REQUEST,
+            )
+            return
+
+        original_name, content = uploaded
+        filename = os.path.basename(original_name.strip())
 
         if not filename:
             self._send_html(upload_page(user, "Filename is required."), status=HTTPStatus.BAD_REQUEST)
             return
 
+        if len(content) > MAX_UPLOAD_BYTES:
+            self._send_html(
+                upload_page(user, "File is larger than the 256 KiB lab limit."),
+                status=HTTPStatus.REQUEST_ENTITY_TOO_LARGE,
+            )
+            return
+
         destination = UPLOAD_DIR / filename
-        destination.write_text(content, encoding="utf-8")
-        link = f'<a href="/uploads/{urllib.parse.quote(filename)}">/uploads/{filename}</a>'
+        destination.write_bytes(content)
+        safe_name = escape(filename)
+        link = f'<a href="/uploads/{urllib.parse.quote(filename)}">/uploads/{safe_name}</a>'
         self._send_html(upload_page(user, f"Uploaded: {link}"))
 
     def _serve_upload(self, route: str) -> None:
@@ -260,6 +279,33 @@ class VulnerableNotesHandler(BaseHTTPRequestHandler):
         parsed = urllib.parse.parse_qs(raw_body, keep_blank_values=True)
         return {key: values[0] for key, values in parsed.items()}
 
+    def _read_uploaded_file(self) -> Optional[tuple[str, bytes]]:
+        """Разобрать один multipart upload без внешнего web-фреймворка."""
+        content_type = self.headers.get("Content-Type", "")
+        if not content_type.lower().startswith("multipart/form-data"):
+            return None
+
+        length = int(self.headers.get("Content-Length", "0"))
+        if length <= 0 or length > MAX_UPLOAD_BYTES + 64 * 1024:
+            return None
+
+        body = self.rfile.read(length)
+        envelope = (
+            f"Content-Type: {content_type}\r\nMIME-Version: 1.0\r\n\r\n".encode("ascii")
+            + body
+        )
+        message = BytesParser(policy=email_policy).parsebytes(envelope)
+        if not message.is_multipart():
+            return None
+
+        for part in message.iter_parts():
+            if part.get_param("name", header="content-disposition") != "file":
+                continue
+            filename = part.get_filename() or ""
+            payload = part.get_payload(decode=True) or b""
+            return filename, payload
+        return None
+
     def _send_cors_headers(self) -> None:
         origin = self.headers.get("Origin", "*")
         self.send_header("Access-Control-Allow-Origin", origin)
@@ -308,7 +354,9 @@ class VulnerableNotesHandler(BaseHTTPRequestHandler):
 
 def run_server(host: str, port: int) -> None:
     """Запустить локальный HTTP-сервер."""
-    server = HTTPServer((host, port), VulnerableNotesHandler)
+    # ThreadingHTTPServer нужен не только для отзывчивости UI: SSRF-лаборатория
+    # обращается к внутреннему endpoint того же процесса.
+    server = ThreadingHTTPServer((host, port), VulnerableNotesHandler)
     print(f"Vulnerable Notes Lab listening on http://{host}:{port}")
     print("Use only as a local training lab. Press Ctrl+C to stop.")
     try:

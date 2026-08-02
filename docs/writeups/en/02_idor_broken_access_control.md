@@ -20,7 +20,7 @@ http://127.0.0.1:8090/note?id=3
 `get_note_vulnerable()` in `vuln_notes/database.py` selects by note id only:
 
 ```python
-WHERE notes.id = {note_id}
+WHERE notes.id = ?
 ```
 
 There is no condition such as:

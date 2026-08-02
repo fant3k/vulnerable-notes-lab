@@ -146,17 +146,17 @@ def list_notes_for_user(connection: sqlite3.Connection, user_id: int) -> list[sq
 def get_note_vulnerable(connection: sqlite3.Connection, note_id: str) -> Optional[sqlite3.Row]:
     """Уязвимое чтение заметки без проверки владельца.
 
-    В функции сразу две учебные проблемы: нет authorization check по owner_id
-    и `note_id` вставляется в SQL напрямую. В реальном коде это должны быть
-    параметризованный запрос и проверка прав доступа.
+    Единственная намеренная проблема здесь — отсутствие authorization check по
+    owner_id. Идентификатор параметризован, чтобы IDOR-кейс не содержал второй,
+    случайной SQL Injection.
     """
     query = (
         "SELECT notes.id, notes.title, notes.body, notes.created_at, "
         "users.username AS owner "
         "FROM notes JOIN users ON users.id = notes.owner_id "
-        f"WHERE notes.id = {note_id}"
+        "WHERE notes.id = ?"
     )
-    return connection.execute(query).fetchone()
+    return connection.execute(query, (note_id,)).fetchone()
 
 
 def create_note(connection: sqlite3.Connection, user_id: int, title: str, body: str) -> int:

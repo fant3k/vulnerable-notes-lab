@@ -8,13 +8,13 @@ The `/upload` endpoint accepts arbitrary filenames and content, saves files unde
 
 1. Log in.
 2. Open `/upload`.
-3. Use filename:
+3. Choose an HTML file named:
 
 ```text
 xss.html
 ```
 
-4. Use content:
+4. Put this content in the file:
 
 ```html
 <script>alert("uploaded html")</script>
@@ -28,7 +28,7 @@ In `vuln_notes/server.py`:
 
 ```python
 destination = UPLOAD_DIR / filename
-destination.write_text(content, encoding="utf-8")
+destination.write_bytes(content)
 ```
 
 The response content type is inferred from the extension:

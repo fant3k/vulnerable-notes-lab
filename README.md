@@ -1,8 +1,14 @@
 # Vulnerable Notes Lab
 
-Vulnerable Notes Lab — локальное intentionally vulnerable web-приложение для практики OWASP Top 10, подготовки writeups и демонстрации AppSec-навыков в GitHub-портфолио.
+[![tests](https://github.com/fant3k/vulnerable-notes-lab/actions/workflows/tests.yml/badge.svg)](https://github.com/fant3k/vulnerable-notes-lab/actions/workflows/tests.yml)
+![Python](https://img.shields.io/badge/Python-3.9%2B-3776ab)
+![Scope](https://img.shields.io/badge/scope-localhost_only-f59e0b)
 
-Проект имитирует простое приложение заметок: пользователи логинятся, создают заметки, открывают detail-view, загружают attachment и используют URL preview. Внутри намеренно оставлены уязвимости, которые часто обсуждают на собеседованиях для Application Security / Security Engineer ролей.
+Vulnerable Notes Lab — небольшое намеренно уязвимое веб-приложение для
+воспроизведения базовых ошибок веб-безопасности и разбора их первопричин.
+
+Проект имитирует сервис заметок: пользователи входят в аккаунт, создают и
+открывают заметки, загружают вложения и запрашивают URL preview.
 
 > Приложение уязвимо специально. Запускайте его только локально на `127.0.0.1` и не публикуйте в интернет.
 
@@ -21,7 +27,7 @@ Vulnerable Notes Lab — локальное intentionally vulnerable web-при�
   - Debug config exposure;
   - Permissive CORS.
 - Русские и английские writeups с воспроизведением, impact и remediation.
-- Unit-тесты, которые фиксируют учебное поведение приложения.
+- Unit- и HTTP integration-тесты, которые фиксируют каждый учебный сценарий.
 - GitHub Actions workflow для запуска тестов.
 
 ## Архитектура
@@ -45,7 +51,10 @@ vulnerable-notes-lab/
     test.sh                 # тесты и compile check
   tests/
     test_database.py
+    test_http.py
     test_sessions.py
+  Dockerfile                # non-root образ для локального запуска
+  docker-compose.yml        # публикация порта только на localhost
 ```
 
 ## Быстрый старт
@@ -78,6 +87,14 @@ admin / admin123
 ```bash
 VNL_PORT=9090 scripts/run.sh
 ```
+
+Или через Docker Compose:
+
+```bash
+docker compose up --build
+```
+
+Compose публикует порт только на `127.0.0.1`.
 
 ## Как пользоваться для обучения
 
@@ -142,31 +159,21 @@ PYTHONPYCACHEPREFIX=/tmp/vulnerable_notes_pycache python3 -m compileall vuln_not
 - Как SSRF связан с доверием server-side network context.
 - Как писать writeups: reproduction, root cause, impact, remediation.
 
-## Как показывать проект в резюме
+## Контролируемый scope
 
-Можно описать так:
+Каждая заявленная уязвимость имеет отдельный writeup и автоматическую проверку.
+В IDOR-кейсе идентификатор параметризован, поэтому он демонстрирует только
+ошибку авторизации, а не случайную вторую SQL Injection. SSRF-сценарий работает
+через внутренний endpoint того же процесса и проверяется end-to-end тестом.
 
-```text
-Vulnerable Notes Lab
-Built an intentionally vulnerable Python web application mapped to OWASP Top 10.
-Implemented SQLi, IDOR, Stored XSS, weak sessions, insecure upload, SSRF, CORS
-misconfiguration and debug exposure, with bilingual writeups and remediation notes.
-```
+Подробнее о принятых границах: [docs/LAB_DESIGN.md](docs/LAB_DESIGN.md).
 
 ## Ограничения
 
 - Это учебная лаборатория, а не production-приложение.
-- UI минимальный и сделан для демонстрации security flaws.
+- UI предназначен для воспроизведения security-сценариев, а не для production.
 - Некоторые уязвимости упрощены, чтобы их было легче объяснить на собеседовании.
 - Приложение не должно запускаться на публичном интерфейсе.
-
-## Планы развития
-
-- Добавить secure branch с исправлениями и diff-based writeups.
-- Добавить Dockerfile и docker-compose.
-- Добавить Playwright screenshots для README.
-- Добавить отдельные labs по CSRF и mass assignment.
-- Добавить checklist по OWASP ASVS для каждой secure-fix версии.
 
 ## Этика
 
