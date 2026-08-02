@@ -17,10 +17,11 @@ http://127.0.0.1:8090/note?id=3
 
 ## Где проблема в коде
 
-Функция `get_note_vulnerable()` в `vuln_notes/database.py` выбирает заметку только по `id`:
+Функция `get_note_vulnerable()` в `vuln_notes/database.py` параметризованно
+выбирает заметку только по `id`, но не связывает её с текущим пользователем:
 
 ```python
-WHERE notes.id = {note_id}
+WHERE notes.id = ?
 ```
 
 В запросе нет условия:

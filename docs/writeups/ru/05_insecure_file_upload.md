@@ -8,13 +8,13 @@ Endpoint `/upload` принимает произвольное имя файла
 
 1. Войдите в приложение.
 2. Откройте `/upload`.
-3. Укажите filename:
+3. Выберите HTML-файл с именем:
 
 ```text
 xss.html
 ```
 
-4. Укажите content:
+4. Поместите в файл content:
 
 ```html
 <script>alert("uploaded html")</script>
@@ -24,11 +24,11 @@ xss.html
 
 ## Где проблема в коде
 
-В `vuln_notes/server.py` файл сохраняется почти напрямую:
+В `vuln_notes/server.py` multipart-файл сохраняется почти напрямую:
 
 ```python
 destination = UPLOAD_DIR / filename
-destination.write_text(content, encoding="utf-8")
+destination.write_bytes(content)
 ```
 
 А при отдаче используется MIME-type по расширению:

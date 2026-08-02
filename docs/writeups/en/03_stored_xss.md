@@ -10,7 +10,7 @@ The application stores note bodies as raw text and renders them into HTML withou
 2. Create a note with this body:
 
 ```html
-<script>alert(document.cookie)</script>
+<script>alert(document.domain)</script>
 ```
 
 3. Open the note.

@@ -11,12 +11,13 @@ from pathlib import Path
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-DATA_DIR = BASE_DIR / "data"
+DATA_DIR = Path(os.environ.get("VNL_DATA_DIR", BASE_DIR / "data")).resolve()
 UPLOAD_DIR = DATA_DIR / "uploads"
 DB_PATH = DATA_DIR / "notes_lab.sqlite3"
 
 APP_HOST = os.environ.get("VNL_HOST", "127.0.0.1")
 APP_PORT = int(os.environ.get("VNL_PORT", "8090"))
+MAX_UPLOAD_BYTES = 256 * 1024
 
 SESSION_COOKIE_NAME = "vn_session"
 

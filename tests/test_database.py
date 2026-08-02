@@ -43,6 +43,12 @@ class VulnerableDatabaseTests(unittest.TestCase):
         self.assertIsNotNone(note)
         self.assertEqual(note["owner"], "bob")
 
+    def test_idor_lookup_does_not_add_a_second_sql_injection(self):
+        with get_connection(self.db_path) as connection:
+            note = get_note_vulnerable(connection, "3 OR 1=1")
+
+        self.assertIsNone(note)
+
     def test_note_body_is_stored_without_sanitization(self):
         payload = '<script>alert("xss")</script>'
         with get_connection(self.db_path) as connection:
