@@ -3,6 +3,9 @@
 [![tests](https://github.com/fant3k/vulnerable-notes-lab/actions/workflows/tests.yml/badge.svg)](https://github.com/fant3k/vulnerable-notes-lab/actions/workflows/tests.yml)
 ![Python](https://img.shields.io/badge/Python-3.9%2B-3776ab)
 ![Scope](https://img.shields.io/badge/scope-localhost_only-f59e0b)
+[![License: MIT](https://img.shields.io/badge/License-MIT-22c55e.svg)](LICENSE)
+
+[English version](README_EN.md)
 
 Vulnerable Notes Lab — небольшое намеренно уязвимое веб-приложение для
 воспроизведения базовых ошибок веб-безопасности и разбора их первопричин.
@@ -11,6 +14,12 @@ Vulnerable Notes Lab — небольшое намеренно уязвимое 
 открывают заметки, загружают вложения и запрашивают URL preview.
 
 > Приложение уязвимо специально. Запускайте его только локально на `127.0.0.1` и не публикуйте в интернет.
+
+![Интерфейс Vulnerable Notes Lab после входа](docs/assets/lab-workspace.png)
+
+На скриншоте — реальный локальный запуск приложения с восемью доступными
+сценариями. Demo-данные не содержат настоящих секретов или пользовательской
+информации.
 
 ## Что реализовано
 
@@ -149,6 +158,9 @@ python3 -B -m unittest discover -s tests
 PYTHONPYCACHEPREFIX=/tmp/vulnerable_notes_pycache python3 -m compileall vuln_notes
 ```
 
+Текущая проверяемая версия: `v1.0.0`. Тестовый набор содержит 16 проверок,
+включая HTTP-воспроизведение всех восьми заявленных сценариев.
+
 ## Что я изучил в процессе
 
 - Как уязвимости OWASP Top 10 выглядят в реальном коде, а не только в теории.
@@ -178,3 +190,8 @@ PYTHONPYCACHEPREFIX=/tmp/vulnerable_notes_pycache python3 -m compileall vuln_not
 ## Этика
 
 Проект предназначен для локального обучения, портфолио и подготовки к собеседованиям. Не используйте его как основу для реального приложения без полного устранения уязвимостей.
+
+## Лицензия
+
+[MIT](LICENSE). Лицензия разрешает использовать код, но не отменяет требования
+изолировать намеренно уязвимое приложение от публичных сетей.

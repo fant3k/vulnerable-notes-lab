@@ -3,6 +3,9 @@
 [![tests](https://github.com/fant3k/vulnerable-notes-lab/actions/workflows/tests.yml/badge.svg)](https://github.com/fant3k/vulnerable-notes-lab/actions/workflows/tests.yml)
 ![Python](https://img.shields.io/badge/Python-3.9%2B-3776ab)
 ![Scope](https://img.shields.io/badge/scope-localhost_only-f59e0b)
+[![License: MIT](https://img.shields.io/badge/License-MIT-22c55e.svg)](LICENSE)
+
+[Русская версия](README.md)
 
 Vulnerable Notes Lab is a deliberately vulnerable local web application for
 reproducing common web-security failures and studying their root causes.
@@ -13,6 +16,11 @@ are documented and verified by automated tests.
 
 > Run this application on `127.0.0.1` or in an isolated training environment.
 > Never expose it to the internet.
+
+![Vulnerable Notes Lab workspace after sign-in](docs/assets/lab-workspace.png)
+
+The screenshot comes from the real application running locally. It contains
+demo data only—no real credentials, secrets or user information.
 
 ## Lab scenarios
 
@@ -66,6 +74,9 @@ Unit tests cover the database and session primitives. HTTP integration tests
 start the real server and verify all eight documented scenarios, including the
 same-process SSRF flow and multipart upload.
 
+The current verified release is `v1.0.0`. The suite contains 16 tests, including
+HTTP reproduction of every advertised scenario.
+
 ## Repository map
 
 ```text
@@ -93,3 +104,8 @@ See [docs/LAB_DESIGN.md](docs/LAB_DESIGN.md) for the complete scenario contract.
 
 Use this repository only for local education, defensive testing and secure-code
 review practice. It is not a production application template.
+
+## License
+
+[MIT](LICENSE). The license permits reuse of the code; it does not make this
+intentionally vulnerable application safe to expose to public networks.
