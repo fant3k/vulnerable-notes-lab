@@ -4,7 +4,16 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "vulnerable-notes-lab"
-version = "0.1.0"
+version = "1.0.0"
 description = "Intentionally vulnerable notes application for OWASP Top 10 practice and AppSec portfolio writeups."
+readme = "README_EN.md"
 requires-python = ">=3.9"
+license = {file = "LICENSE"}
 dependencies = []
+
+[project.urls]
+Repository = "https://github.com/fant3k/vulnerable-notes-lab"
+Documentation = "https://github.com/fant3k/vulnerable-notes-lab#readme"
+
+[tool.setuptools.packages.find]
+include = ["vuln_notes*"]

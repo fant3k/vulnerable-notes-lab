@@ -47,6 +47,9 @@ def page(title: str, body: str, user: Optional[Mapping[str, str]] = None) -> str
       --warning: #f7c873;
     }}
     * {{ box-sizing: border-box; }}
+    a {{ color: var(--accent); }}
+    a:hover {{ color: #a9c7ff; }}
+    :focus-visible {{ outline: 3px solid var(--warning); outline-offset: 3px; }}
     body {{
       margin: 0;
       background: var(--bg);
@@ -125,6 +128,7 @@ def page(title: str, body: str, user: Optional[Mapping[str, str]] = None) -> str
       header nav {{ display: flex; flex-wrap: wrap; gap: 8px 14px; }}
       header a {{ margin-left: 0; }}
       .lab-grid {{ grid-template-columns: repeat(2, 1fr); }}
+      .panel {{ padding: 20px; overflow-x: auto; }}
     }}
   </style>
 </head>
