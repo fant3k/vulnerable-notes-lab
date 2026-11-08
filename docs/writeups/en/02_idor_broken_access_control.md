@@ -1,4 +1,4 @@
-# 02. IDOR / Broken Access Control
+# 02. IDOR in the lab: reading another user's private note
 
 ## Summary
 
@@ -14,6 +14,9 @@ http://127.0.0.1:8090/note?id=3
 ```
 
 3. Alice can read Bob's private note.
+
+The [HTTP test](../../../tests/test_http.py) logs in as Alice and checks
+that the response contains Bob's note and identifies Bob as its owner.
 
 ## Root Cause
 
@@ -33,14 +36,32 @@ AND notes.owner_id = ?
 
 Any authenticated user can enumerate note ids and read other users' private notes.
 
-## Remediation
+## Fix and verification
 
-Include the current user id in the query:
+The [owner-scoped lookup](../../../vuln_notes/database.py) checks the
+requested note and its owner in the same parameterized query:
 
-```python
+```sql
 SELECT ...
 FROM notes
 WHERE notes.id = ? AND notes.owner_id = ?
 ```
 
-Admin access should be handled through an explicit authorization branch.
+The application must supply the user ID from a verified session. A caller
+can treat foreign and nonexistent notes alike because both return no row.
+If the product requires administrator access, enforce it through a
+separate, explicit authorization policy.
+
+The [regression tests](../../../tests/test_database.py) verify that Alice
+cannot read Bob's note and Bob can read the same note. They also check that
+Alice can still read her own note and that alternate forms of the ID do
+not bypass the owner check.
+
+```sh
+python3 -B -m unittest discover -s tests -k idor -k owner_scoped -v
+```
+
+The lab's HTTP route remains intentionally vulnerable for the reproduction
+above. The fixed lookup is tested at the database boundary. The lab's
+unsigned session cookie is a separate exercise and cannot provide a
+trusted identity for a production route.
