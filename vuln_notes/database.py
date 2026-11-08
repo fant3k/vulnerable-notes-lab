@@ -159,6 +159,25 @@ def get_note_vulnerable(connection: sqlite3.Connection, note_id: str) -> Optiona
     return connection.execute(query, (note_id,)).fetchone()
 
 
+def get_note_for_owner(
+    connection: sqlite3.Connection, note_id: str, *, authenticated_user_id: int
+) -> Optional[sqlite3.Row]:
+    """Demonstrate an ownership check with a trusted, authenticated user ID.
+
+    Foreign and missing notes both return None. The caller must supply the
+    identity from a verified session, never from the request parameters.
+    """
+    return connection.execute(
+        """
+        SELECT notes.id, notes.title, notes.body, notes.created_at, users.username AS owner
+        FROM notes
+        JOIN users ON users.id = notes.owner_id
+        WHERE notes.id = ? AND notes.owner_id = ?
+        """,
+        (note_id, authenticated_user_id),
+    ).fetchone()
+
+
 def create_note(connection: sqlite3.Connection, user_id: int, title: str, body: str) -> int:
     """Создать заметку, сохраняя body без HTML-sanitization.
 
